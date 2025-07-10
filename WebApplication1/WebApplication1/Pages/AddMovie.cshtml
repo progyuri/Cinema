@@ -1,0 +1,103 @@
+@page
+@model AddMovieModel
+@{
+    ViewData["Title"] = "Добавление фильма";
+}
+
+<div class="container">
+    <h1>Добавление нового фильма</h1>
+
+    <form method="post" class="add-form">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group mb-3">
+                    <label asp-for="Movie.Title" class="form-label">Название фильма *</label>
+                    <input asp-for="Movie.Title" class="form-control" placeholder="Введите название фильма" />
+                    <span asp-validation-for="Movie.Title" class="text-danger"></span>
+                </div>
+
+                <div class="form-group mb-3">
+                    <label asp-for="Movie.Director" class="form-label">Режиссер *</label>
+                    <input asp-for="Movie.Director" class="form-control" placeholder="Введите имя режиссера" />
+                    <span asp-validation-for="Movie.Director" class="text-danger"></span>
+                </div>
+
+                <div class="form-group mb-3">
+                    <label asp-for="Movie.Genre" class="form-label">Стиль *</label>
+                    <input asp-for="Movie.Genre" class="form-control" placeholder="Например: Драма, Боевик, Фантастика" />
+                    <span asp-validation-for="Movie.Genre" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="form-group mb-3">
+                    <label asp-for="Movie.Description" class="form-label">Краткое описание *</label>
+                    <textarea asp-for="Movie.Description" class="form-control" rows="4" placeholder="Введите краткое описание фильма"></textarea>
+                    <span asp-validation-for="Movie.Description" class="text-danger"></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group mb-3">
+            <label class="form-label">Сеансы</label>
+            <div id="sessions-container">
+                @for (int i = 0; i < Model.SessionTimes.Count; i++)
+                {
+                    <div class="session-item mb-2">
+                        <div class="row g-2 align-items-center">
+                            <div class="col-5">
+                                <input type="time" name="SessionTimes[@i]" value="@Model.SessionTimes[i]" class="form-control" />
+                            </div>
+                            <div class="col-5">
+                                <input type="number" step="0.01" min="0" name="SessionPrices[@i]" value="@Model.SessionPrices[i]" class="form-control" placeholder="Цена, ₽" />
+                            </div>
+                            <div class="col-2">
+                                <button type="button" class="btn btn-outline-danger remove-session w-100">Удалить</button>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+            <button type="button" id="add-session" class="btn btn-outline-primary mt-2">Добавить сеанс</button>
+        </div>
+
+        <div class="form-group">
+            <button type="submit" class="btn btn-success">Добавить фильм</button>
+            <a asp-page="/Schedule" class="btn btn-secondary">Отмена</a>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            let sessionIndex = @Model.SessionTimes.Count;
+
+            $('#add-session').click(function() {
+                const sessionHtml = `
+                    <div class=\"session-item mb-2\">
+                        <div class=\"row g-2 align-items-center\">
+                            <div class=\"col-5\">
+                                <input type=\"time\" name=\"SessionTimes[${sessionIndex}]\" class=\"form-control\" />
+                            </div>
+                            <div class=\"col-5\">
+                                <input type=\"number\" step=\"0.01\" min=\"0\" name=\"SessionPrices[${sessionIndex}]\" class=\"form-control\" placeholder=\"Цена, ₽\" />
+                            </div>
+                            <div class=\"col-2\">
+                                <button type=\"button\" class=\"btn btn-outline-danger remove-session w-100\">Удалить</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                $('#sessions-container').append(sessionHtml);
+                sessionIndex++;
+            });
+
+            $(document).on('click', '.remove-session', function() {
+                if ($('.session-item').length > 1) {
+                    $(this).closest('.session-item').remove();
+                }
+            });
+        });
+    </script>
+} 

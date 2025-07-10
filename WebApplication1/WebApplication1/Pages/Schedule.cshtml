@@ -1,0 +1,82 @@
+@page
+@model ScheduleModel
+@{
+    ViewData["Title"] = "Расписание фильмов";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Расписание фильмов</h1>
+    <a asp-page="/AddMovie" class="btn btn-success">
+        <i class="fas fa-plus"></i> Добавить фильм
+    </a>
+</div>
+
+<form method="get" class="search-form mb-4">
+    <div class="row">
+        <div class="col-md-8">
+            <input type="text" name="searchTerm" value="@Model.SearchTerm" class="form-control" placeholder="Поиск по названию, режиссеру, стилю, описанию или сеансам..." />
+        </div>
+        <div class="col-md-4">
+            <button type="submit" class="btn btn-primary me-2">Найти</button>
+            <a href="/Schedule" class="btn btn-secondary">Все сеансы</a>
+        </div>
+    </div>
+</form>
+
+@if (!string.IsNullOrEmpty(Model.SearchTerm))
+{
+    <div class="alert alert-info">
+        Результаты поиска для: "<strong>@Model.SearchTerm</strong>"
+        <a href="/Schedule" class="float-end">Показать все</a>
+    </div>
+}
+
+<div class="schedule">
+    @if (Model.Movies.Any())
+    {
+        @foreach (var movie in Model.Movies)
+        {
+            <div class="movie-card">
+                <div class="movie-header">
+                    <h2>@movie.Title</h2>
+                </div>
+                <div class="movie-content">
+                    <p><strong>Режиссер:</strong> @movie.Director</p>
+                    <p><strong>Стиль:</strong> @movie.Genre</p>
+                    <p><strong>Описание:</strong> @movie.Description</p>
+                    <div class="showtimes">
+                        <strong>Сеансы:</strong>
+                        <ul>
+                            @foreach (var session in movie.Sessions)
+                            {
+                                <li>
+                                    @session.StartTime.ToString(@"hh\:mm")
+                                    @if (session.HallNumber.HasValue)
+                                    {
+                                        <span class="hall-info">(Зал @session.HallNumber)</span>
+                                    }
+                                    @if (session.Price.HasValue)
+                                    {
+                                        <span class="price-info">@session.Price ₽</span>
+                                    }
+                                </li>
+                            }
+                        </ul>
+                    </div>
+                </div>
+                <div class="movie-actions">
+                    <a asp-page="/EditMovie" asp-route-id="@movie.Id" class="btn btn-outline-primary btn-sm mb-2 w-100">Редактировать</a>
+                    <a asp-page="/DeleteMovie" asp-route-id="@movie.Id" class="btn btn-outline-danger btn-sm w-100">Удалить</a>
+                </div>
+            </div>
+        }
+    }
+    else
+    {
+        <div class="col-12">
+            <div class="alert alert-warning">
+                По вашему запросу ничего не найдено. Попробуйте изменить поисковый запрос.
+            </div>
+        </div>
+    }
+</div>

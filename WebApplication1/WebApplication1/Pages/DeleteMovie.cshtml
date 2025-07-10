@@ -1,0 +1,67 @@
+@page
+@model DeleteMovieModel
+@{
+    ViewData["Title"] = "Удаление фильма";
+}
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-danger text-white">
+                    <h3 class="mb-0">Подтверждение удаления</h3>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-warning">
+                        <h4 class="alert-heading">Внимание!</h4>
+                        <p>Вы собираетесь удалить фильм. Это действие нельзя отменить.</p>
+                    </div>
+
+                    @if (Model.Movie != null)
+                    {
+                        <div class="movie-info mb-4">
+                            <h4>Информация о фильме:</h4>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p><strong>Название:</strong> @Model.Movie.Title</p>
+                                    <p><strong>Режиссер:</strong> @Model.Movie.Director</p>
+                                    <p><strong>Стиль:</strong> @Model.Movie.Genre</p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p><strong>Описание:</strong> @Model.Movie.Description</p>
+                                    <p><strong>Количество сеансов:</strong> @Model.Movie.Sessions.Count</p>
+                                </div>
+                            </div>
+                            
+                            @if (Model.Movie.Sessions.Any())
+                            {
+                                <div class="mt-3">
+                                    <strong>Сеансы:</strong>
+                                    <div class="showtimes">
+                                        <ul>
+                                            @foreach (var session in Model.Movie.Sessions)
+                                            {
+                                                <li>@session</li>
+                                            }
+                                        </ul>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+
+                    <form method="post">
+                        <div class="d-flex justify-content-between">
+                            <a asp-page="/Schedule" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i> Отмена
+                            </a>
+                            <button type="submit" class="btn btn-danger">
+                                <i class="fas fa-trash"></i> Удалить фильм
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div> 
