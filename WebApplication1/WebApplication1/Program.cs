@@ -4,12 +4,28 @@ using WebApplication1.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Добавляем поддержку переменных окружения
+builder.Configuration.AddEnvironmentVariables();
+
 // Add services to the container.
 builder.Services.AddRazorPages();
 
-// Добавляем контекст базы данных PostgreSQL
+// Добавляем контекст базы данных PostgreSQL с поддержкой переменных окружения
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+if (string.IsNullOrEmpty(connectionString))
+{
+    // Если строка подключения не найдена, создаем её из переменных окружения
+    var host = Environment.GetEnvironmentVariable("DB_HOST") ?? "localhost";
+    var database = Environment.GetEnvironmentVariable("DB_NAME") ?? "cinema_db";
+    var username = Environment.GetEnvironmentVariable("DB_USER") ?? "postgres";
+    var password = Environment.GetEnvironmentVariable("DB_PASSWORD") ?? "";
+    var port = Environment.GetEnvironmentVariable("DB_PORT") ?? "5432";
+    
+    connectionString = $"Host={host};Database={database};Username={username};Password={password};Port={port}";
+}
+
 builder.Services.AddDbContext<CinemaDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseNpgsql(connectionString));
 
 // Добавляем сервис для работы с фильмами
 builder.Services.AddScoped<IMovieService, MovieService>();
