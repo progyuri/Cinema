@@ -12,17 +12,23 @@ builder.Services.AddRazorPages();
 
 // Добавляем контекст базы данных PostgreSQL с поддержкой переменных окружения
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-if (string.IsNullOrEmpty(connectionString))
-{
-    // Если строка подключения не найдена, создаем её из переменных окружения
-    var host = Environment.GetEnvironmentVariable("DB_HOST") ?? "localhost";
-    var database = Environment.GetEnvironmentVariable("DB_NAME") ?? "cinema_db";
-    var username = Environment.GetEnvironmentVariable("DB_USER") ?? "postgres";
-    var password = Environment.GetEnvironmentVariable("DB_PASSWORD") ?? "";
-    var port = Environment.GetEnvironmentVariable("DB_PORT") ?? "5432";
-    
-    connectionString = $"Host={host};Database={database};Username={username};Password={password};Port={port}";
-}
+
+// Всегда создаем строку подключения из переменных окружения для Railway
+var host = Environment.GetEnvironmentVariable("DB_HOST") ?? "localhost";
+var database = Environment.GetEnvironmentVariable("DB_NAME") ?? "cinema_db";
+var username = Environment.GetEnvironmentVariable("DB_USER") ?? "postgres";
+var password = Environment.GetEnvironmentVariable("DB_PASSWORD") ?? "";
+var port = Environment.GetEnvironmentVariable("DB_PORT") ?? "5432";
+
+// Выводим отладочную информацию
+Console.WriteLine($"DB_HOST: {host}");
+Console.WriteLine($"DB_NAME: {database}");
+Console.WriteLine($"DB_USER: {username}");
+Console.WriteLine($"DB_PASSWORD: {(string.IsNullOrEmpty(password) ? "empty" : "set")}");
+Console.WriteLine($"DB_PORT: {port}");
+
+connectionString = $"Host={host};Database={database};Username={username};Password={password};Port={port}";
+Console.WriteLine($"Connection String: {connectionString}");
 
 builder.Services.AddDbContext<CinemaDbContext>(options =>
     options.UseNpgsql(connectionString));
@@ -57,8 +63,19 @@ app.MapRazorPages();
 // Применяем миграции при запуске
 using (var scope = app.Services.CreateScope())
 {
-    var context = scope.ServiceProvider.GetRequiredService<CinemaDbContext>();
-    context.Database.Migrate();
+    try
+    {
+        var context = scope.ServiceProvider.GetRequiredService<CinemaDbContext>();
+        Console.WriteLine("Attempting to apply database migrations...");
+        context.Database.Migrate();
+        Console.WriteLine("Database migrations applied successfully.");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Error applying migrations: {ex.Message}");
+        Console.WriteLine($"Stack trace: {ex.StackTrace}");
+        // Не прерываем запуск приложения при ошибке миграции
+    }
 }
 
 app.Run();
