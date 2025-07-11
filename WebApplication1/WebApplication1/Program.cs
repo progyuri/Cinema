@@ -39,7 +39,11 @@ builder.Services.AddScoped<IMovieService, MovieService>();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-if (!app.Environment.IsDevelopment())
+if (app.Environment.IsDevelopment())
+{
+    app.UseDeveloperExceptionPage();
+}
+else
 {
     app.UseExceptionHandler("/Error");
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
@@ -67,8 +71,18 @@ using (var scope = app.Services.CreateScope())
     {
         var context = scope.ServiceProvider.GetRequiredService<CinemaDbContext>();
         Console.WriteLine("Attempting to apply database migrations...");
-        context.Database.Migrate();
-        Console.WriteLine("Database migrations applied successfully.");
+        
+        // Проверяем подключение к базе данных
+        if (context.Database.CanConnect())
+        {
+            Console.WriteLine("Database connection successful.");
+            context.Database.Migrate();
+            Console.WriteLine("Database migrations applied successfully.");
+        }
+        else
+        {
+            Console.WriteLine("Cannot connect to database.");
+        }
     }
     catch (Exception ex)
     {
